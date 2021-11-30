@@ -63,17 +63,18 @@ public class Startup
 
     public void ConfigureProductionServices(IServiceCollection services)
     {
+        ConfigureInMemoryDatabases(services);
         // use real database
         // Requires LocalDB which can be installed with SQL Server Express 2016
         // https://www.microsoft.com/en-us/download/details.aspx?id=54284
-        services.AddDbContext<CatalogContext>(c =>
-            c.UseSqlServer(Configuration.GetConnectionString("CatalogConnection")));
-
-        // Add Identity DbContext
-        services.AddDbContext<AppIdentityDbContext>(options =>
-            options.UseSqlServer(Configuration.GetConnectionString("IdentityConnection")));
-
-        ConfigureServices(services);
+        // services.AddDbContext<CatalogContext>(c =>
+        //     c.UseSqlServer(Configuration.GetConnectionString("CatalogConnection")));
+        //
+        // // Add Identity DbContext
+        // services.AddDbContext<AppIdentityDbContext>(options =>
+        //     options.UseSqlServer(Configuration.GetConnectionString("IdentityConnection")));
+        //
+        // ConfigureServices(services);
     }
 
     public void ConfigureTestingServices(IServiceCollection services)
@@ -124,9 +125,11 @@ public class Startup
             options.AddPolicy(name: CORS_POLICY,
                               builder =>
                               {
-                                  builder.WithOrigins(baseUrlConfig.WebBase.Replace("host.docker.internal", "localhost").TrimEnd('/'));
+                                  //builder.WithOrigins(baseUrlConfig.WebBase.Replace("host.docker.internal", "localhost").TrimEnd('/'));
+                                  //builder.WithOrigins("https://webapp-api-ms.azurewebsites.net").AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin();
                                   builder.AllowAnyMethod();
                                   builder.AllowAnyHeader();
+                                  builder.AllowAnyOrigin();
                               });
         });
 

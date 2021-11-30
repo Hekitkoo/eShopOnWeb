@@ -74,17 +74,18 @@ public class Startup
 
     public void ConfigureProductionServices(IServiceCollection services)
     {
+        ConfigureDevelopmentServices(services);
         // use real database
         // Requires LocalDB which can be installed with SQL Server Express 2016
         // https://www.microsoft.com/en-us/download/details.aspx?id=54284
-        services.AddDbContext<CatalogContext>(c =>
-            c.UseSqlServer(Configuration.GetConnectionString("CatalogConnection")));
-
-        // Add Identity DbContext
-        services.AddDbContext<AppIdentityDbContext>(options =>
-            options.UseSqlServer(Configuration.GetConnectionString("IdentityConnection")));
-
-        ConfigureServices(services);
+        // services.AddDbContext<CatalogContext>(c =>
+        //     c.UseSqlServer(Configuration.GetConnectionString("CatalogConnection")));
+        //
+        // // Add Identity DbContext
+        // services.AddDbContext<AppIdentityDbContext>(options =>
+        //     options.UseSqlServer(Configuration.GetConnectionString("IdentityConnection")));
+        //
+        // ConfigureServices(services);
     }
 
     public void ConfigureTestingServices(IServiceCollection services)
@@ -193,49 +194,44 @@ public class Startup
                 {
                     var result = new
                     {
-                        status = report.Status.ToString(),
-                        errors = report.Entries.Select(e => new
-                        {
-                            key = e.Key,
-                            value = Enum.GetName(typeof(HealthStatus), e.Value.Status)
-                        })
+                        status = report.Status.ToString(), errors = report.Entries.Select(e => new { key = e.Key, value = Enum.GetName(typeof(HealthStatus), e.Value.Status) })
                     }.ToJson();
                     context.Response.ContentType = MediaTypeNames.Application.Json;
                     await context.Response.WriteAsync(result);
                 }
             });
-        if (env.IsDevelopment())
+        // if (env.IsDevelopment())
         {
             app.UseDeveloperExceptionPage();
             app.UseShowAllServicesMiddleware();
             app.UseMigrationsEndPoint();
             app.UseWebAssemblyDebugging();
-        }
-        else
-        {
-            app.UseExceptionHandler("/Error");
-            // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-            app.UseHsts();
-        }
+            //}
+            // else
+            // {
+            //     app.UseExceptionHandler("/Error");
+            //     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+            //     app.UseHsts();
+            // }
 
-        app.UseHttpsRedirection();
-        app.UseBlazorFrameworkFiles();
-        app.UseStaticFiles();
-        app.UseRouting();
+            app.UseHttpsRedirection();
+            app.UseBlazorFrameworkFiles();
+            app.UseStaticFiles();
+            app.UseRouting();
 
-        app.UseCookiePolicy();
-        app.UseAuthentication();
-        app.UseAuthorization();
+            app.UseCookiePolicy();
+            app.UseAuthentication();
+            app.UseAuthorization();
 
-        app.UseEndpoints(endpoints =>
-        {
-            endpoints.MapControllerRoute("default", "{controller:slugify=Home}/{action:slugify=Index}/{id?}");
-            endpoints.MapRazorPages();
-            endpoints.MapHealthChecks("home_page_health_check", new HealthCheckOptions { Predicate = check => check.Tags.Contains("homePageHealthCheck") });
-            endpoints.MapHealthChecks("api_health_check", new HealthCheckOptions { Predicate = check => check.Tags.Contains("apiHealthCheck") });
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllerRoute("default", "{controller:slugify=Home}/{action:slugify=Index}/{id?}");
+                endpoints.MapRazorPages();
+                endpoints.MapHealthChecks("home_page_health_check", new HealthCheckOptions { Predicate = check => check.Tags.Contains("homePageHealthCheck") });
+                endpoints.MapHealthChecks("api_health_check", new HealthCheckOptions { Predicate = check => check.Tags.Contains("apiHealthCheck") });
                 //endpoints.MapBlazorHub("/admin");
                 endpoints.MapFallbackToFile("index.html");
-        });
+            });
+        }
     }
-
 }
