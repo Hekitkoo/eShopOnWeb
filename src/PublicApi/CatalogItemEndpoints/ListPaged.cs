@@ -20,7 +20,7 @@ public class ListPaged : BaseAsyncEndpoint
     private readonly IRepository<CatalogItem> _itemRepository;
     private readonly IUriComposer _uriComposer;
     private readonly IMapper _mapper;
-    private readonly ILogger _logger;
+    private readonly ILogger<ListPaged> _logger;
 
     public ListPaged(IRepository<CatalogItem> itemRepository,
         IUriComposer uriComposer,
@@ -53,9 +53,10 @@ public class ListPaged : BaseAsyncEndpoint
             brandId: request.CatalogBrandId,
             typeId: request.CatalogTypeId);
 
+        throw new Exception("Cannot move further");
         var items = await _itemRepository.ListAsync(pagedSpec, cancellationToken);
 
-        _logger.LogInformation($"Returned {items.Count} items.");
+        _logger.LogWarning($"Returned {items.Count} items.");
         response.CatalogItems.AddRange(items.Select(_mapper.Map<CatalogItemDto>));
         foreach (CatalogItemDto item in response.CatalogItems)
         {
