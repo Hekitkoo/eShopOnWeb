@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.eShopWeb.ApplicationCore.Entities;
 using Microsoft.eShopWeb.ApplicationCore.Interfaces;
 using Microsoft.eShopWeb.ApplicationCore.Specifications;
+using Microsoft.Extensions.Logging;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace Microsoft.eShopWeb.PublicApi.CatalogItemEndpoints;
@@ -19,14 +20,17 @@ public class ListPaged : BaseAsyncEndpoint
     private readonly IRepository<CatalogItem> _itemRepository;
     private readonly IUriComposer _uriComposer;
     private readonly IMapper _mapper;
+    private readonly ILogger _logger;
 
     public ListPaged(IRepository<CatalogItem> itemRepository,
         IUriComposer uriComposer,
-        IMapper mapper)
+        IMapper mapper,
+        ILogger<ListPaged> logger)
     {
         _itemRepository = itemRepository;
         _uriComposer = uriComposer;
         _mapper = mapper;
+        _logger = logger;
     }
 
     [HttpGet("api/catalog-items")]
@@ -51,6 +55,7 @@ public class ListPaged : BaseAsyncEndpoint
 
         var items = await _itemRepository.ListAsync(pagedSpec, cancellationToken);
 
+        _logger.LogInformation($"Returned {items.Count} items.");
         response.CatalogItems.AddRange(items.Select(_mapper.Map<CatalogItemDto>));
         foreach (CatalogItemDto item in response.CatalogItems)
         {

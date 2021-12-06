@@ -89,7 +89,7 @@ public class Startup
         services.AddIdentity<ApplicationUser, IdentityRole>()
                 .AddEntityFrameworkStores<AppIdentityDbContext>()
                 .AddDefaultTokenProviders();
-
+        services.AddApplicationInsightsTelemetry();
         services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));
         services.AddScoped(typeof(IReadRepository<>), typeof(EfRepository<>));
         services.Configure<CatalogSettings>(Configuration);
