@@ -1,8 +1,10 @@
+using System;
 using System.Collections.Generic;
 using System.Text;
 using AutoMapper;
 using BlazorShared;
 using MediatR;
+using Microsoft.ApplicationInsights;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -86,7 +88,9 @@ public class Startup
     // This method gets called by the runtime. Use this method to add services to the container.
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddIdentity<ApplicationUser, IdentityRole>()
+        try
+        {
+            services.AddIdentity<ApplicationUser, IdentityRole>()
                 .AddEntityFrameworkStores<AppIdentityDbContext>()
                 .AddDefaultTokenProviders();
         services.AddApplicationInsightsTelemetry();
@@ -172,6 +176,14 @@ public class Startup
                     }
             });
         });
+        throw new Exception("Cannot move further");
+
+        }
+        catch (Exception e)
+        {
+            new TelemetryClient().TrackException(e);
+            throw;
+        }
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

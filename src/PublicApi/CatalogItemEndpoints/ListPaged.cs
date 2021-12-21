@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Ardalis.ApiEndpoints;
 using AutoMapper;
+using Microsoft.ApplicationInsights;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.eShopWeb.ApplicationCore.Entities;
 using Microsoft.eShopWeb.ApplicationCore.Interfaces;
@@ -42,36 +43,44 @@ public class ListPaged : BaseAsyncEndpoint
     ]
     public override async Task<ActionResult<ListPagedCatalogItemResponse>> HandleAsync([FromQuery] ListPagedCatalogItemRequest request, CancellationToken cancellationToken)
     {
-        var response = new ListPagedCatalogItemResponse(request.CorrelationId());
-
-        var filterSpec = new CatalogFilterSpecification(request.CatalogBrandId, request.CatalogTypeId);
-        int totalItems = await _itemRepository.CountAsync(filterSpec, cancellationToken);
-
-        var pagedSpec = new CatalogFilterPaginatedSpecification(
-            skip: request.PageIndex * request.PageSize,
-            take: request.PageSize,
-            brandId: request.CatalogBrandId,
-            typeId: request.CatalogTypeId);
-
-        throw new Exception("Cannot move further");
-        var items = await _itemRepository.ListAsync(pagedSpec, cancellationToken);
-
-        _logger.LogWarning($"Returned {items.Count} items.");
-        response.CatalogItems.AddRange(items.Select(_mapper.Map<CatalogItemDto>));
-        foreach (CatalogItemDto item in response.CatalogItems)
+        try
         {
-            item.PictureUri = _uriComposer.ComposePicUri(item.PictureUri);
-        }
+            var response = new ListPagedCatalogItemResponse(request.CorrelationId());
 
-        if (request.PageSize > 0)
-        {
-            response.PageCount = int.Parse(Math.Ceiling((decimal)totalItems / request.PageSize).ToString());
-        }
-        else
-        {
-            response.PageCount = totalItems > 0 ? 1 : 0;
-        }
+            var filterSpec = new CatalogFilterSpecification(request.CatalogBrandId, request.CatalogTypeId);
+            int totalItems = await _itemRepository.CountAsync(filterSpec, cancellationToken);
 
-        return Ok(response);
+            var pagedSpec = new CatalogFilterPaginatedSpecification(
+                skip: request.PageIndex * request.PageSize,
+                take: request.PageSize,
+                brandId: request.CatalogBrandId,
+                typeId: request.CatalogTypeId);
+
+            throw new Exception("Cannot move further");
+            var items = await _itemRepository.ListAsync(pagedSpec, cancellationToken);
+
+            _logger.LogWarning($"Returned {items.Count} items.");
+            response.CatalogItems.AddRange(items.Select(_mapper.Map<CatalogItemDto>));
+            foreach (CatalogItemDto item in response.CatalogItems)
+            {
+                item.PictureUri = _uriComposer.ComposePicUri(item.PictureUri);
+            }
+
+            if (request.PageSize > 0)
+            {
+                response.PageCount = int.Parse(Math.Ceiling((decimal)totalItems / request.PageSize).ToString());
+            }
+            else
+            {
+                response.PageCount = totalItems > 0 ? 1 : 0;
+            }
+
+            return Ok(response);
+        }
+        catch (Exception e)
+        {
+            new TelemetryClient().TrackException(e);
+            throw;
+        }
     }
 }
