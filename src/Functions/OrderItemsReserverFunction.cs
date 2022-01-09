@@ -24,7 +24,7 @@ namespace Functions
 
         public OrderItemsReserverFunction()
         {
-            _blobBase = "DefaultEndpointsProtocol=https;AccountName=cloudxtestms;AccountKey=UgR5WogKEooTJm3soBGzDIbfeit9+F/DJYNGgA8+8oxma3JdLYSdcdWrWhuFb0bUvYOXIRQV+A6IxCgSkFdmQw==;EndpointSuffix=core.windows.net";
+            _blobBase = "";
             _containerName = "test";
             _blobName = "test";
         }
