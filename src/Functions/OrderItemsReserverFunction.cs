@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -17,6 +18,9 @@ namespace Functions
         private readonly string _blobBase;
         private readonly string _containerName;
         private readonly string _blobName;
+        private const string JsonFormat = ".json";
+        private const string JsonContentType = "application/json";
+        
 
         public OrderItemsReserverFunction()
         {
@@ -38,6 +42,19 @@ namespace Functions
             log.LogInformation("Order Reserve are processed");
         }
 
+        private async Task SendToBlob(IEnumerable<OrderItemsToBlobData> itemsToBlobData)
+        {
+            var cloudStorageAccount = CloudStorageAccount.Parse(_blobBase);
+            var client = cloudStorageAccount.CreateCloudBlobClient();
+            var container = client.GetContainerReference(_containerName);
+            var date = DateTime.UtcNow;
+            var blobName = _blobName + date.ToString("MM-dd-yy") + date.Millisecond + JsonFormat;
+            var blob = container.GetBlockBlobReference(blobName);
+            blob.Properties.ContentType = JsonContentType;
+            await using MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(itemsToBlobData)));
+            await blob.UploadFromStreamAsync(ms);
+        }
+        
         private async Task<IEnumerable<OrderItemsToBlobData>> ParseToItemToBlobData(HttpRequest req)
         {
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
@@ -46,22 +63,12 @@ namespace Functions
 
             return data?.Select(x => new OrderItemsToBlobData(x.Key, x.Value));
         }
-
-        private async Task SendToBlob(IEnumerable<OrderItemsToBlobData> itemsToBlobData)
-        {
-            var cloudStorageAccount = CloudStorageAccount.Parse(_blobBase);
-            var client = cloudStorageAccount.CreateCloudBlobClient();
-            var container = client.GetContainerReference(_containerName);
-            var blob = container.GetBlockBlobReference(_blobName);
-            await using MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(itemsToBlobData)));
-            await blob.UploadFromStreamAsync(ms);
-        }
     }
 
     public class OrderItemsToBlobData
     {
-        public string ItemId { get; set; }
-        public int Quantity { get; set; }
+        public string ItemId { get; }
+        public int Quantity { get; }
 
         public OrderItemsToBlobData(string itemId, int quantity)
         {

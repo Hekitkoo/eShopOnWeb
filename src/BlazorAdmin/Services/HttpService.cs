@@ -74,10 +74,10 @@ public class HttpService
         var result = await _httpClient.PostAsync($"{_functionsUrl}{uri}", content);
         if (!result.IsSuccessStatusCode)
         {
-            var exception = JsonSerializer.Deserialize<ErrorDetails>(await result.Content.ReadAsStringAsync(), new JsonSerializerOptions
+            var exception = new ErrorDetails
             {
-                PropertyNameCaseInsensitive = true
-            });
+                Message = "Ooops",
+            };
             _toastService.ShowToast($"Error : {exception.Message}", ToastLevel.Error);
         }
 

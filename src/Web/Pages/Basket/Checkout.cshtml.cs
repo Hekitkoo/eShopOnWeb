@@ -80,6 +80,11 @@ public class CheckoutModel : PageModel
 
         return RedirectToPage("Success");
     }
+    
+    private async Task ReserveOrderItems(Dictionary<string, int> orderItems)
+    {
+        await _httpService.HttpPostToFunction(Constants.OrderItemsReserverUrl, orderItems);
+    }
 
     private async Task SetBasketModelAsync()
     {
@@ -106,10 +111,5 @@ public class CheckoutModel : PageModel
         var cookieOptions = new CookieOptions();
         cookieOptions.Expires = DateTime.Today.AddYears(10);
         Response.Cookies.Append(Constants.BASKET_COOKIENAME, _username, cookieOptions);
-    }
-
-    private async Task ReserveOrderItems(Dictionary<string, int> orderItems)
-    {
-        await _httpService.HttpPostToFunction(Constants.OrderItemsReserverUrl, orderItems);
     }
 }
