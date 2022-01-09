@@ -66,10 +66,11 @@ public class CheckoutModel : PageModel
             }
 
             var updateModel = items.ToDictionary(b => b.Id.ToString(), b => b.Quantity);
+            var address = new Address("123 Main St.", "Kent", "OH", "United States", "44240");
             await _basketService.SetQuantities(BasketModel.Id, updateModel);
-            await _orderService.CreateOrderAsync(BasketModel.Id, new Address("123 Main St.", "Kent", "OH", "United States", "44240"));
+            await _orderService.CreateOrderAsync(BasketModel.Id, address);
             await _basketService.DeleteBasketAsync(BasketModel.Id);
-            await ReserveOrderItems(updateModel);
+            //await ReserveOrderItems(items, address);
         }
         catch (EmptyBasketOnCheckoutException emptyBasketOnCheckoutException)
         {
@@ -81,9 +82,11 @@ public class CheckoutModel : PageModel
         return RedirectToPage("Success");
     }
     
-    private async Task ReserveOrderItems(Dictionary<string, int> orderItems)
+    private async Task ReserveOrderItems(IEnumerable<BasketItemViewModel> orderItems, Address address)
     {
-        await _httpService.HttpPostToFunction(Constants.OrderItemsReserverUrl, orderItems);
+        var finalPrice = orderItems.Sum(orderItem => orderItem.UnitPrice);
+        var data = new { orderItems, address, finalPrice };
+        await _httpService.HttpPostToFunction(Constants.OrderItemsReserverUrl, data);
     }
 
     private async Task SetBasketModelAsync()
@@ -113,3 +116,5 @@ public class CheckoutModel : PageModel
         Response.Cookies.Append(Constants.BASKET_COOKIENAME, _username, cookieOptions);
     }
 }
+
+
