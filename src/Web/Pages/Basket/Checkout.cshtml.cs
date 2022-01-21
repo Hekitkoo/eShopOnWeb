@@ -16,7 +16,8 @@ using Microsoft.eShopWeb.ApplicationCore.Interfaces;
 using Microsoft.eShopWeb.Infrastructure.Identity;
 using Microsoft.eShopWeb.Web.Interfaces;
 using BlazorAdmin.Services;
-
+using Azure.Messaging;
+using Azure.Messaging.ServiceBus;
 using Newtonsoft.Json;
 
 namespace Microsoft.eShopWeb.Web.Pages.Basket;
@@ -31,6 +32,14 @@ public class CheckoutModel : PageModel
     private readonly IBasketViewModelService _basketViewModelService;
     private readonly IAppLogger<CheckoutModel> _logger;
     private readonly HttpService _httpService;
+    
+
+    private const string ServiceBusConnectionString =
+        "";
+
+    private const string QueueName = "cloudxtestqueue";
+    
+    static ServiceBusSender _sender;
 
     public CheckoutModel(IBasketService basketService,
         IBasketViewModelService basketViewModelService,
@@ -45,6 +54,8 @@ public class CheckoutModel : PageModel
         _basketViewModelService = basketViewModelService;
         _logger = logger;
         _httpService = httpService;
+        var client = new ServiceBusClient(ServiceBusConnectionString);
+        _sender = client.CreateSender(QueueName);
     }
 
     public BasketViewModel BasketModel { get; set; } = new BasketViewModel();
@@ -52,6 +63,11 @@ public class CheckoutModel : PageModel
     public async Task OnGet()
     {
         await SetBasketModelAsync();
+    }
+    
+    private async Task ReserveOrderItems(Dictionary<string, int> orderItems)
+    {
+        await _sender.SendMessageAsync(new ServiceBusMessage{Body = BinaryData.FromObjectAsJson(orderItems)});
     }
 
     public async Task<IActionResult> OnPost(IEnumerable<BasketItemViewModel> items)
@@ -81,10 +97,6 @@ public class CheckoutModel : PageModel
         return RedirectToPage("Success");
     }
     
-    private async Task ReserveOrderItems(Dictionary<string, int> orderItems)
-    {
-        await _httpService.HttpPostToFunction(Constants.OrderItemsReserverUrl, orderItems);
-    }
 
     private async Task SetBasketModelAsync()
     {

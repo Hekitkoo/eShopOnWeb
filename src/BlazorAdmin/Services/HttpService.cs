@@ -12,7 +12,6 @@ public class HttpService
     private readonly HttpClient _httpClient;
     private readonly ToastService _toastService;
     private readonly string _apiUrl;
-    private readonly string _functionsUrl;
 
 
     public HttpService(HttpClient httpClient, BaseUrlConfiguration baseUrlConfiguration, ToastService toastService)
@@ -20,7 +19,6 @@ public class HttpService
         _httpClient = httpClient;
         _toastService = toastService;
         _apiUrl = baseUrlConfiguration.ApiBase;
-        _functionsUrl = baseUrlConfiguration.FunctionsBase;
     }
 
     public async Task<T> HttpGet<T>(string uri)
@@ -65,22 +63,6 @@ public class HttpService
         }
 
         return await FromHttpResponseMessage<T>(result);
-    }
-    
-    public async Task HttpPostToFunction(string uri, object dataToSend)
-    {
-        var content = ToJson(dataToSend);
-
-        var result = await _httpClient.PostAsync($"{_functionsUrl}{uri}", content);
-        if (!result.IsSuccessStatusCode)
-        {
-            var exception = new ErrorDetails
-            {
-                Message = "Ooops",
-            };
-            _toastService.ShowToast($"Error : {exception.Message}", ToastLevel.Error);
-        }
-
     }
 
     public async Task<T> HttpPut<T>(string uri, object dataToSend)

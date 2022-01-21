@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Azure.Messaging.ServiceBus.Administration;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
@@ -24,19 +25,17 @@ namespace Functions
 
         public OrderItemsReserverFunction()
         {
-            _blobBase = "DefaultEndpointsProtocol=https;AccountName=cloudxtestms;AccountKey=UgR5WogKEooTJm3soBGzDIbfeit9+F/DJYNGgA8+8oxma3JdLYSdcdWrWhuFb0bUvYOXIRQV+A6IxCgSkFdmQw==;EndpointSuffix=core.windows.net";
-            _containerName = "test";
+            _blobBase = "";
+            _containerName = "cloudx-container";
             _blobName = "test";
         }
         
         [FunctionName("OrderItemsReserverFunction")]
-        public async Task Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "OrderReserve")] HttpRequest req,
-            ILogger log)
+        public async Task Run([ServiceBusTrigger("cloudxtestqueue", Connection = "Test")]string message, ILogger log)
         {
             log.LogInformation("Order Reserve processing");
 
-            var toBlobData = await ParseToItemToBlobData(req);
+            var toBlobData = await ParseToItemToBlobData(message);
             await SendToBlob(toBlobData);
             
             log.LogInformation("Order Reserve are processed");
@@ -55,11 +54,9 @@ namespace Functions
             await blob.UploadFromStreamAsync(ms);
         }
         
-        private async Task<IEnumerable<OrderItemsToBlobData>> ParseToItemToBlobData(HttpRequest req)
+        private async Task<IEnumerable<OrderItemsToBlobData>> ParseToItemToBlobData(string message)
         {
-            string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-
-            Dictionary<string, int> data = JsonConvert.DeserializeObject<Dictionary<string, int>>(requestBody);
+            Dictionary<string, int> data = JsonConvert.DeserializeObject<Dictionary<string, int>>(message);
 
             return data?.Select(x => new OrderItemsToBlobData(x.Key, x.Value));
         }

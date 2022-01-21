@@ -5,6 +5,8 @@
         <LangVersion>9</LangVersion>
     </PropertyGroup>
     <ItemGroup>
+        <PackageReference Include="Azure.Messaging.ServiceBus" Version="7.5.1" />
+        <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.ServiceBus" Version="5.2.0" />
         <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="3.0.11" />
     </ItemGroup>
     <ItemGroup>
