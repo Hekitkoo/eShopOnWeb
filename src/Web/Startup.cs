@@ -165,6 +165,7 @@ public class Startup
 
         services.AddScoped<ToastService>();
         services.AddScoped<HttpService>();
+        services.AddScoped<IMessageService, MessageService>();
         services.AddBlazorServices();
 
         services.AddDatabaseDeveloperPageExceptionFilter();

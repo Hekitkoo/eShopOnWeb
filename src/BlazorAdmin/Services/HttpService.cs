@@ -12,6 +12,7 @@ public class HttpService
     private readonly HttpClient _httpClient;
     private readonly ToastService _toastService;
     private readonly string _apiUrl;
+    private readonly string _azureFunctUrl;
 
 
     public HttpService(HttpClient httpClient, BaseUrlConfiguration baseUrlConfiguration, ToastService toastService)
@@ -19,6 +20,7 @@ public class HttpService
         _httpClient = httpClient;
         _toastService = toastService;
         _apiUrl = baseUrlConfiguration.ApiBase;
+        _azureFunctUrl = baseUrlConfiguration.AzureFuncBase;
     }
 
     public async Task<T> HttpGet<T>(string uri)
@@ -63,6 +65,14 @@ public class HttpService
         }
 
         return await FromHttpResponseMessage<T>(result);
+    }
+
+    public async Task PostToFuncAsJsonAsync(string uri, object dataToSend)
+    {
+        var content = ToJson(dataToSend);
+
+        var result = await _httpClient.PostAsync(_azureFunctUrl + uri, content);
+        result.EnsureSuccessStatusCode();
     }
 
     public async Task<T> HttpPut<T>(string uri, object dataToSend)

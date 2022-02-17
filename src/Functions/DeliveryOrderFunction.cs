@@ -14,8 +14,8 @@ namespace Functions
     {
         [FunctionName("DeliveryOrderFunction")]
         public async Task Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "order-details")] HttpRequest req,
-            [CosmosDB(databaseName: "OrdersProcessing", collectionName: "OrdersProcessing", ConnectionStringSetting = "CosmosDBConnection")] IAsyncCollector<OrderDetailsDto> orderDetails,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "DeliveryOrder")] HttpRequest req,
+            [CosmosDB(databaseName: "DeliveryOrderProcessing", collectionName: "DeliveryOrderProcessing", ConnectionStringSetting = "CosmosDBConnection")] IAsyncCollector<OrderDetailsDto> orderDetails,
             ILogger log)
         {
             log.LogInformation("DeliveryOrderFunction processing");
@@ -35,24 +35,27 @@ namespace Functions
         }
     }
 
-    internal class OrderDetailsDto
+    public class OrderDetailsDto
     {
-        public string id { get; set; }
         public string BuyerId { get; set; }
+
         public DateTime OrderDate { get; set; }
-        public IEnumerable<OrderItem> OrderItems { get; set; }
-        public ShopToAddress ShopToAddress { get; set; }
-        public double Total { get => OrderItems.Sum(oi => oi.Units * oi.UnitPrice); }
+
+        public IEnumerable<OrderItemDto> OrderItems { get; set; }
+
+        public ShopToAddressDto ShopToAddress { get; set; }
+
+        public decimal Total { get; set; }
     }
 
-    internal class OrderItem
+    public abstract class OrderItemDto
     {
         public double UnitPrice { get; set; }
 
         public int Units { get; set; }
     }
 
-    internal class ShopToAddress
+    public abstract class ShopToAddressDto
     {
         public string Street { get; set; }
 

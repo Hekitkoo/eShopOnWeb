@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.eShopWeb.Infrastructure.Data;
 using Microsoft.eShopWeb.Infrastructure.Identity;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration.AzureKeyVault;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -15,7 +18,23 @@ public class Program
     public static async Task Main(string[] args)
     {
         var host = CreateHostBuilder(args)
-                    .Build();
+            .ConfigureAppConfiguration((hostingContext, config) =>
+            {
+                var env = hostingContext.HostingEnvironment;
+                if (env.IsDevelopment())
+                {
+                    var assembly = Assembly.Load(new AssemblyName(env.ApplicationName));
+                    if (assembly != null)
+                    {
+                        config.AddUserSecrets(assembly, true);
+                    }
+                }
+
+                config.Build();
+                var keyVaultUri = "vault.azure.net/";
+                config.AddAzureKeyVault(keyVaultUri, new DefaultKeyVaultSecretManager());
+            })
+            .Build();
 
         using (var scope = host.Services.CreateScope())
         {
@@ -24,11 +43,13 @@ public class Program
             try
             {
                 var catalogContext = services.GetRequiredService<CatalogContext>();
+                var identityContext = services.GetRequiredService<AppIdentityDbContext>();
+
                 await CatalogContextSeed.SeedAsync(catalogContext, loggerFactory);
 
                 var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
                 var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
-                await AppIdentityDbContextSeed.SeedAsync(userManager, roleManager);
+                await AppIdentityDbContextSeed.SeedAsync(identityContext, userManager, roleManager);
             }
             catch (Exception ex)
             {

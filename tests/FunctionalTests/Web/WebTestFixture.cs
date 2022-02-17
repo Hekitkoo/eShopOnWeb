@@ -64,8 +64,10 @@ public class WebTestFixture : WebApplicationFactory<Startup>
 
                         // seed sample user data
                         var userManager = scopedServices.GetRequiredService<UserManager<ApplicationUser>>();
+                        var identityContext = scopedServices.GetRequiredService<AppIdentityDbContext>();
+
                     var roleManager = scopedServices.GetRequiredService<RoleManager<IdentityRole>>();
-                    AppIdentityDbContextSeed.SeedAsync(userManager, roleManager).Wait();
+                    AppIdentityDbContextSeed.SeedAsync(identityContext, userManager, roleManager).Wait();
                 }
                 catch (Exception ex)
                 {

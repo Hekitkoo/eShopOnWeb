@@ -63,9 +63,11 @@ public class ApiTestFixture : WebApplicationFactory<Startup>
                         CatalogContextSeed.SeedAsync(db, loggerFactory).Wait();
 
                         // seed sample user data
+                        var identityContext = scopedServices.GetRequiredService<AppIdentityDbContext>();
+
                         var userManager = scopedServices.GetRequiredService<UserManager<ApplicationUser>>();
                     var roleManager = scopedServices.GetRequiredService<RoleManager<IdentityRole>>();
-                    AppIdentityDbContextSeed.SeedAsync(userManager, roleManager).Wait();
+                    AppIdentityDbContextSeed.SeedAsync(identityContext, userManager, roleManager).Wait();
                 }
                 catch (Exception ex)
                 {
