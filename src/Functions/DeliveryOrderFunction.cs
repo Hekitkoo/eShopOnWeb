@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -15,7 +14,7 @@ namespace Functions
         [FunctionName("DeliveryOrderFunction")]
         public async Task Run(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "DeliveryOrder")] HttpRequest req,
-            [CosmosDB(databaseName: "DeliveryOrderProcessing", collectionName: "DeliveryOrderProcessing", ConnectionStringSetting = "CosmosDBConnection")] IAsyncCollector<OrderDetailsDto> orderDetails,
+            [CosmosDB(databaseName: "DeliveryOrderProcessing", collectionName: "DeliveredOrders", ConnectionStringSetting = "CosmosDBConnection")] IAsyncCollector<OrderDetailsDto> orderDetails,
             ILogger log)
         {
             log.LogInformation("DeliveryOrderFunction processing");
