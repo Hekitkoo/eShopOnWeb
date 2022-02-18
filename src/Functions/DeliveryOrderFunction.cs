@@ -36,26 +36,37 @@ namespace Functions
 
     public class OrderDetailsDto
     {
+        public string Id { get; set; }
+
         public string BuyerId { get; set; }
 
         public DateTime OrderDate { get; set; }
 
         public IEnumerable<OrderItemDto> OrderItems { get; set; }
 
-        public ShopToAddressDto ShopToAddress { get; set; }
+        //public ShopToAddressDto ShipToAddress { get; set; }
 
         public decimal Total { get; set; }
     }
 
-    public abstract class OrderItemDto
+    public class OrderItemDto
     {
         public double UnitPrice { get; set; }
 
         public int Units { get; set; }
     }
 
-    public abstract class ShopToAddressDto
+    public class ShopToAddressDto
     {
+        public ShopToAddressDto(string street, string city, string state, string country, string zipCode)
+        {
+            Street = street;
+            City = city;
+            State = state;
+            Country = country;
+            ZipCode = zipCode;
+        }
+    
         public string Street { get; set; }
 
         public string City { get; set; }

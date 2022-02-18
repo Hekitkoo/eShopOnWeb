@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Text;
 using AutoMapper;
 using BlazorShared;
@@ -125,9 +125,7 @@ public class Startup
                               builder =>
                               {
                                   //builder.WithOrigins(baseUrlConfig.WebBase.Replace("host.docker.internal", "localhost").TrimEnd('/'));
-                                  builder.AllowAnyOrigin();
-                                  builder.AllowAnyMethod();
-                                  builder.AllowAnyHeader();
+                                  builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
                               });
         });
 

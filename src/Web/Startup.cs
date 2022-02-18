@@ -98,7 +98,6 @@ public class Startup
     {
         services.AddCookieSettings();
 
-
         services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
             .AddCookie(options =>
             {

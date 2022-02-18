@@ -31,8 +31,7 @@ public class Program
                 }
 
                 config.Build();
-                var keyVaultUri = "vault.azure.net/";
-                config.AddAzureKeyVault(keyVaultUri, new DefaultKeyVaultSecretManager());
+                config.AddAzureKeyVault("https://cloudxfinal.vault.azure.net/");
             })
             .Build();
 

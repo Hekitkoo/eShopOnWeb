@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
@@ -18,22 +18,21 @@ public class Program
     public static async Task Main(string[] args)
     {
         var host = CreateHostBuilder(args)
-            .ConfigureAppConfiguration((hostingContext, config) =>
-            {
-                var env = hostingContext.HostingEnvironment;
-                if (env.IsDevelopment())
-                {
-                    var assembly = Assembly.Load(new AssemblyName(env.ApplicationName));
-                    if (assembly != null)
-                    {
-                        config.AddUserSecrets(assembly, true);
-                    }
-                }
+            //.ConfigureAppConfiguration((hostingContext, config) =>
+            //{
+            //    var env = hostingContext.HostingEnvironment;
+            //    if (env.IsDevelopment())
+            //    {
+            //        var assembly = Assembly.Load(new AssemblyName(env.ApplicationName));
+            //        if (assembly != null)
+            //        {
+            //            config.AddUserSecrets(assembly, true);
+            //        }
+            //    }
 
-                config.Build();
-                var keyVaultUri = "vault.azure.net/";
-                config.AddAzureKeyVault(keyVaultUri, new DefaultKeyVaultSecretManager());
-            })
+            //    config.Build();
+            //    config.AddAzureKeyVault("https://cloudxfinal.vault.azure.net/");
+            //})
             .Build();
 
         using (var scope = host.Services.CreateScope())
